@@ -46,11 +46,11 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
 }
 PROCESS.mailReports <- function(reports, contacts, master){
   for(pp in names(reports)){
-    try(sendmail('xnat_reporter@hbic-synapse2.kumc.edu',contacts$EMAIL[contacts$PROJECT == pp],'XNAT Report',c(reports[[pp]])),silent = TRUE)
+    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',contacts$EMAIL[contacts$PROJECT == pp],'XNAT Report',c(reports[[pp]])),silent = TRUE)
   }
   if(!is.na(master)){
     master_report <- do.call('c',reports)
-    try(sendmail('xnat_reporter@hbic-synapse2.kumc.edu',master,'XNAT Report',c(master_report)),silent = TRUE)
+    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',master,'XNAT Report',c(master_report)),silent = TRUE)
 
     }
 }
