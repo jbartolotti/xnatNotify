@@ -13,7 +13,7 @@ PROCESS.getProjects <- function(prearch_dir){
 PROCESS.generateReports <- function(prearch_dir, plist, contacts){
   reports <- list()
   for(pp in plist){
-    all_lines <- c(sprintf('Hello, %s',contacts$NAME[contacts$PROJECT == pp]),'',
+    all_lines <- c(sprintf('Hello, %s',contacts$CONTACT[contacts$PROJECT == pp]),'',
                    sprintf('PROJECT ID: %s',pp),
                    sprintf('REPORT GENERATED ON: %s',Sys.time(),'')
                    )
@@ -39,18 +39,18 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
       all_lines2 = c(all_lines2,paste('scan on',scans,'for',pp),'')
     }
 
-    reports[[as.character(pp)]] <- c(all_lines, all_lines2,'.')
+    reports[[as.character(pp)]] <- c(all_lines, all_lines2)
   }
 
   return(reports)
 }
 PROCESS.mailReports <- function(reports, contacts, master){
   for(pp in names(reports)){
-    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',contacts$EMAIL[contacts$PROJECT == pp],'XNAT Report',c(reports[[pp]])),silent = TRUE)
+    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',contacts$EMAIL[contacts$PROJECT == pp],'XNAT Report',c(reports[[pp]],'.')),silent = TRUE)
   }
   if(!is.na(master)){
     master_report <- do.call('c',reports)
-    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',master,'XNAT Report',c(master_report)),silent = TRUE)
+    try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',master,'XNAT Report',c(master_report,'.')),silent = TRUE)
 
     }
 }
