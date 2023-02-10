@@ -36,7 +36,7 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
     {
       all_lines = c(all_lines, '', sprintf('===ALL SCANS FOR PROJECT %s IN PREARCHIVE THAT WERE ADDED IN THE LAST WEEK===',pp))
       for(s in week_scans){
-        all_lines <- c(all_lines, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1], s), scan_reports[[s]][2:length(scan_reports[[s]],'')])
+        all_lines <- c(all_lines, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1], s), scan_reports[[s]][2:length(scan_reports[[s]])],'')
         }
 #      all_lines = c(all_lines,paste('scan on',week_scans,'for',pp),'')
     }
