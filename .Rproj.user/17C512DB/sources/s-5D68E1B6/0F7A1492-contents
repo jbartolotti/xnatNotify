@@ -48,7 +48,7 @@ xnatNotify <- function(prearch_dir = getwd(), contacts = NA, master = NA){
 
   projects <- PROCESS.getProjects(prearch_dir)
   if(!all(contacts$PROJECT %in% projects$studies)){
-      disp('WARNING: The following projects are present in the Contact data,\n
+      warning('WARNING: The following projects are present in the Contact data,\n
                But are not located in the prearchive:\n',
            paste(contacts$PROJECT[!contacts$PROJECT %in% projects$studies], collapse = ', '))
   }
