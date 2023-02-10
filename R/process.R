@@ -19,6 +19,10 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
                    )
     all_lines2 <- as.character()
     scans <- dir(file.path(prearch_dir,pp))
+    scan_reports <- list()
+    for(s in scans){
+      scan_reports[[s]] <- getDicomCounts(prearch_dir, pp, s)
+      }
     delta_days <- unlist(lapply(scans,
                                 function(x)
                                 {
@@ -31,12 +35,19 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
     if (length(week_scans) > 0)
     {
       all_lines = c(all_lines, '', sprintf('===ALL SCANS FOR PROJECT %s IN PREARCHIVE THAT WERE ADDED IN THE LAST WEEK===',pp))
-      all_lines = c(all_lines,paste('scan on',week_scans,'for',pp),'')
+      for(s in week_scans){
+        all_lines <- c(all_lines, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1], s), scan_reports[[s]][2:length(scan_reports[[s]],'')])
+        }
+#      all_lines = c(all_lines,paste('scan on',week_scans,'for',pp),'')
     }
     if (length(scans) > 0)
     {
       all_lines2 = c(all_lines2, '', sprintf('===ALL SCANS FOR PROJECT %s CURRENTLY IN PREARCHIVE===',pp))
-      all_lines2 = c(all_lines2,paste('scan on',scans,'for',pp),'')
+      for(s in scans){
+        all_lines2 <- c(all_lines2, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1],s), scan_reports[[s]][2:length(scan_reports[[s]])],'')
+      }
+
+#      all_lines2 = c(all_lines2,paste('scan on',scans,'for',pp),'')
     }
 
     reports[[as.character(pp)]] <- c(all_lines, all_lines2)
@@ -44,6 +55,7 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts){
 
   return(reports)
 }
+
 PROCESS.mailReports <- function(reports, contacts, master){
   for(pp in names(reports)){
     try(sendmailR::sendmail('xnat_reporter@hbic-synapse2.kumc.edu',contacts$EMAIL[contacts$PROJECT == pp],'XNAT Report',c(reports[[pp]],'.')),silent = TRUE)
@@ -54,3 +66,44 @@ PROCESS.mailReports <- function(reports, contacts, master){
 
     }
 }
+
+getDicomCounts <- function(prearch_dir, project, scan){
+  dcm_report <- as.character()
+  scandir <- file.path(prearch_dir,project,scan)
+  scandir_contents <- dir(scandir)
+  tmpdir <- file.info(file.path(scandir,scandir_contents))$isdir
+  if(sum(tmpdir)>0){ # Continue if there is a directory within scan directory
+    scan_name <- scandir_contents[tmpdir]
+    dcm_report <- scan_name
+    rundir <- file.path(scandir,scan_name,'SCANS')
+    if( file.exists(rundir) ){ #continue if there is a folder SCANS
+      run_names <- dir(rundir)
+      runcounts <- list()
+      for(r in run_names){
+        dv_names <- dir(file.path(rundir,r))
+        for(dv in dv_names){
+          filenames <- dir(file.path(rundir,r,dv))
+          dicom_list <- filenames[grepl('[.]dcm',filenames)]
+          runcounts[[r]] <- list()
+          runcounts[[r]][[dv]] <- list(dcm = length(dicom_list), all = length(filenames))
+          }
+      }
+
+      runcounts_list <- unlist(runcounts)
+      runcounts_list_dcm <- runcounts_list[grepl('dcm',names(runcounts_list))]
+
+      numerical_order <- order(as.numeric(
+        unlist(lapply(names(runcounts_list_dcm),
+                      function(x){strsplit(x,'[.]')[[1]][1]}
+                      ))
+        ))
+      for(i in names(runcounts_list_dcm)[numerical_order]){
+        dcm_report <- c(dcm_report,sprintf('%s: %s',i,runcounts_list_dcm[i]))
+
+        }
+
+    }
+
+  }
+  return(dcm_report)
+  }
