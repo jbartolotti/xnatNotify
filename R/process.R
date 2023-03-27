@@ -107,3 +107,102 @@ getDicomCounts <- function(prearch_dir, project, scan){
   }
   return(dcm_report)
   }
+
+allscans <- list()
+prearch_base <- '/xnatdata/prearch'
+project_list <- c('147614')
+for(p in project_list){
+  scanlist <- dir(file.path(prearch_base, p))
+  for(s in scanlist){
+    sdir <- dir(file.path(prearch_base,p,s))
+    isdir <- file.info(dir(file.path(prearch_base,p,s),full.names = TRUE))$isdir
+    ss <- sdir[isdir]
+    if(length(ss)>0){
+      thisdf <- list()
+      if (any(dir(file.path(prearch_base,p,s,ss))=='SCANS')){
+        runs <- dir(file.path(prearch_base,p,s,ss,'SCANS'))
+        for(r in runs){
+          d <- 0
+          sec <- 0
+          thisdir <- dir(file.path(prearch_base,p,s,ss,'SCANS',r))
+          if(any(thisdir=='DICOM')){
+          d <- system(sprintf('ls -f %s | grep \'[.]dcm\' | wc -l ',file.path(prearch_base, p, s, ss, 'SCANS',r,'DICOM')), intern = TRUE)
+          }
+          if(any(thisdir=='secondary')){
+          sec <- system(sprintf('ls -f %s | grep \'[.]dcm\' | wc -l ',file.path(prearch_base, p, s, ss, 'SCANS',r,'secondary')), intern = TRUE)
+          }
+          thisdf[[r]] <- data.frame(project = p, sub = s, run = r, dicomcount = d, secondary_dicomcount = sec)
+
+        }
+
+      }
+      allscans[[s]] <- do.call('rbind',thisdf)
+    }
+
+    }
+}
+allall <- do.call('rbind',allscans)
+
+lines <- as.character()
+myruns <- unique(allall$run)
+for(r in myruns[order(as.numeric(myruns))]){
+  subs <- allall$sub[allall$run == r]
+  counts <- (as.numeric(allall$dicomcount[allall$run == r]))
+  mymode <- which(tabulate(counts) == max(tabulate(counts)))
+  notfull <- counts !=mymode
+  if(any(notfull)){
+    for(i in which(notfull)){
+      lines <- c(lines,(sprintf('PROJ: %s, SUB: %s, RUN: %s, DICOM %s/%s ',147614, subs[i], r, counts[i], mymode)))
+    }
+    }
+  }
+
+
+a <- system(sprintf('ls -f %s | grep \'[.]dcm\' | wc -l ',file.path('/xnatdata/prearch','147614','20220718_191149864','147614_BB_1003_01','SCANS','1','DICOM')), intern = TRUE)
+
+#########
+#Get dicom counts from ku3T/rawdata
+allscans <- list()
+basedir <- '~/ku3T/rawdata'
+project_list <- c('147614_BLUE')
+subdirs <- list('147614_BLUE' = '147614')
+for(p in project_list){
+  scanlist <- dir(file.path(basedir, p))
+  subscanlist <- scanlist[grepl(subdirs[[p]],scanlist)]
+  for(s in subscanlist){
+    sdir <- dir(file.path(basedir,p,s))
+
+    if(any(sdir == 'ima')){
+      thisdf <- list()
+        runs <- dir(file.path(basedir,p,s,'ima'))
+        tmp <- dir(file.path(basedir,p,s,'ima'),full.names = TRUE)
+        runs <- runs[file.info(tmp)$isdir]
+        for(r in runs){
+          d <- 0
+            d <- as.numeric(system(sprintf('ls -f %s | grep \'[.]dcm\' | wc -l ',file.path(basedir, p, s, 'ima',r)), intern = TRUE))
+
+            thisdf[[r]] <- data.frame(project = p, sub = s, run = r, dicomcount = d)
+
+
+      }
+      allscans[[s]] <- do.call('rbind',thisdf)
+    }
+
+  }
+}
+allall <- do.call('rbind',allscans)
+
+replace_list <- list(
+  "tgse_pcasl_11c2_seg2x2use" = "tgse_pcasl_11c2_seg2x2_use")
+
+for(i in names(replace_list)){
+  allall$run[allall$run==i] = replace_list[[i]]
+}
+
+for(rr in unique(allall$run)){
+
+
+
+  }
+
+
