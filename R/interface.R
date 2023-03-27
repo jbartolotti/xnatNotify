@@ -41,7 +41,7 @@ loadContacts <- function(file = NA){
 #' @param master Optional master email contact. If present, they will receive
 #'     an email containing all reports sent to contacts.
 #' @export
-xnatNotify <- function(prearch_dir = getwd(), contacts = NA, master = NA){
+xnatNotify <- function(prearch_dir = getwd(), contacts = NA, master = NA, do_lastday = TRUE, do_lastweek = TRUE, do_alltime = TRUE){
   if(class(contacts) != 'data.frame' && (is.na(contacts) || class(contacts)=='character')){
     contacts <- loadContacts(contacts)
   }
@@ -57,7 +57,7 @@ xnatNotify <- function(prearch_dir = getwd(), contacts = NA, master = NA){
   if(length(plist) == 0){
     warning('No projects in the Contact data are present in the prearchive. Quitting.')
   } else {
-    reports <- PROCESS.generateReports(prearch_dir, plist, contacts)
+    reports <- PROCESS.generateReports(prearch_dir, plist, contacts, do_lastday, do_lastweek, do_alltime)
     PROCESS.mailReports(reports, contacts,master)
     return(reports)
   }

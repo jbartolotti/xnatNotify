@@ -4,7 +4,14 @@
 \alias{xnatNotify}
 \title{XNAT Notify}
 \usage{
-xnatNotify(prearch_dir = getwd(), contacts = NA, master = NA)
+xnatNotify(
+  prearch_dir = getwd(),
+  contacts = NA,
+  master = NA,
+  do_lastday = TRUE,
+  do_lastweek = TRUE,
+  do_alltime = TRUE
+)
 }
 \arguments{
 \item{prearch_dir}{prearchive directory that contains project folders.
