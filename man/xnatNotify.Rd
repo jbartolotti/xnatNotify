@@ -23,7 +23,8 @@ or a path to a csv file containing that information. Default is to open
 an interactive file selector to get the csv file.}
 
 \item{master}{Optional master email contact. If present, they will receive
-an email containing all reports sent to contacts.}
+an email containing all reports sent to contacts.
+@param do_empty_email logical TRUE/FALSE. If true, an email will be sent even if there is nothing to report. Defaults to FALSE (i.e., no email if nothing to report).}
 }
 \description{
 This function takes a prearchive location and a contact list. It searches

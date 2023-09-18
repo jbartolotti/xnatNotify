@@ -24,6 +24,8 @@ loadContacts <- function(file = NA){
     return(dat)
 }
 
+
+
 #' XNAT Notify
 #'
 #' This function takes a prearchive location and a contact list. It searches
@@ -40,8 +42,13 @@ loadContacts <- function(file = NA){
 #'     an interactive file selector to get the csv file.
 #' @param master Optional master email contact. If present, they will receive
 #'     an email containing all reports sent to contacts.
+#'     @param do_empty_email logical TRUE/FALSE. If true, an email will be sent even if there is nothing to report. Defaults to FALSE (i.e., no email if nothing to report).
 #' @export
-xnatNotify <- function(prearch_dir = getwd(), contacts = NA, master = NA, do_lastday = TRUE, do_lastweek = TRUE, do_alltime = TRUE){
+xnatNotify <- function(prearch_dir = getwd(),
+                       contacts = NA, master = NA,
+                       do_lastday = TRUE,
+                       do_lastweek = TRUE,
+                       do_alltime = TRUE){
   if(class(contacts) != 'data.frame' && (is.na(contacts) || class(contacts)=='character')){
     contacts <- loadContacts(contacts)
   }

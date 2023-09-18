@@ -13,6 +13,8 @@ PROCESS.getProjects <- function(prearch_dir){
 PROCESS.generateReports <- function(prearch_dir, plist, contacts, do_lastday, do_lastweek, do_alltime){
   reports <- list()
   for(pp in plist){
+    any_data <- FALSE
+    do_empty_mail <- contacts$EMPTY_MAIL[contacts$PROJECT == pp] != 'no_empty_mail'
     all_lines <- c(sprintf('Hello, %s',contacts$CONTACT[contacts$PROJECT == pp]),'',
                    sprintf('PROJECT ID: %s',pp),
                    sprintf('REPORT GENERATED ON: %s',Sys.time(),'')
@@ -35,6 +37,7 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts, do_lastday, do
     day_scans <- scans[delta_days <= 1]
     if (length(day_scans) > 0 && do_lastday)
     {
+      any_data <- TRUE
       all_lines = c(all_lines, '', sprintf('===ALL SCANS FOR PROJECT %s IN PREARCHIVE THAT WERE ADDED IN THE LAST DAY===',pp))
       for(s in day_scans){
         all_lines <- c(all_lines, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1], s), scan_reports[[s]][2:length(scan_reports[[s]])],'')
@@ -42,6 +45,7 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts, do_lastday, do
     }
     if (length(week_scans) > 0 && do_lastweek)
     {
+      any_data <- TRUE
       all_lines2 = c(all_lines2, '', sprintf('===ALL SCANS FOR PROJECT %s IN PREARCHIVE THAT WERE ADDED IN THE LAST WEEK===',pp))
       for(s in week_scans){
         all_lines2 <- c(all_lines2, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1], s), scan_reports[[s]][2:length(scan_reports[[s]])],'')
@@ -49,13 +53,16 @@ PROCESS.generateReports <- function(prearch_dir, plist, contacts, do_lastday, do
     }
     if (length(scans) > 0 && do_alltime)
     {
+      any_data <- TRUE
       all_lines3 = c(all_lines3, '', sprintf('===ALL SCANS FOR PROJECT %s CURRENTLY IN PREARCHIVE===',pp))
       for(s in scans){
         all_lines3 <- c(all_lines3, sprintf('Scan %s on %s. Dicom counts:',scan_reports[[s]][1],s), scan_reports[[s]][2:length(scan_reports[[s]])],'')
       }
     }
 
-    reports[[as.character(pp)]] <- c(all_lines, all_lines2, all_lines3)
+    if(do_empty_mail | any_data){
+      reports[[as.character(pp)]] <- c(all_lines, all_lines2, all_lines3)
+    }
   }
 
   return(reports)

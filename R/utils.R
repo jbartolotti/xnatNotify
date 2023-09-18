@@ -61,3 +61,7 @@ UTILS.getFile <- function(file){
   myfile <- list(path = myfile_path, filename = myfile_name, dir = myfile_dir)
   return(myfile)
 }
+
+
+
+
